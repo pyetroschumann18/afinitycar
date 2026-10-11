@@ -27,6 +27,7 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
   const [step, setStep] = useState<StepKey>("vehicleCategory");
   const [answers, setAnswers] = useState<Answers>(() => selectedVehicleId ? { vehicleCategory: "car", hasSpecificVehicle: "yes", vehicleInterest: selectedVehicleId } : {});
   const [status, setStatus] = useState<SubmitStatus>("idle");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [submittedVehicleId, setSubmittedVehicleId] = useState<VehicleId | null>(null);
   const [previousSelectedVehicleId, setPreviousSelectedVehicleId] = useState<VehicleId | null>(selectedVehicleId);
@@ -74,18 +75,30 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
     if (next) { setError(""); setStep(next); }
   }
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (status === "success") return;
+    if (status === "success" || isSubmitting) return;
     if (!answers.name?.trim()) { setError("Informe seu nome."); return; }
     if (!answers.phone?.trim() || answers.phone.replace(/\D/g, "").length < 8) {
       setError("Informe seu WhatsApp com DDD.");
       return;
     }
 
-    setSubmittedVehicleId(answers.vehicleInterest ?? null);
-    setError("");
-    setStatus("success");
+    setIsSubmitting(true);
+    try {
+      await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(answers),
+      });
+    } catch (err) {
+      console.error("Erro ao registrar lead no Google Sheets:", err);
+    } finally {
+      setIsSubmitting(false);
+      setSubmittedVehicleId(answers.vehicleInterest ?? null);
+      setError("");
+      setStatus("success");
+    }
   }
 
   return (
@@ -156,7 +169,9 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
             <div className="form-actions">
               {stepIndex > 0 && <button className="back-button" type="button" onClick={() => { setStep(steps[stepIndex - 1]); setError(""); }}>Voltar</button>}
               {step === "contact" ? (
-                <button className="next-button" type="submit">Enviar e receber mensagem<span aria-hidden="true">↗</span></button>
+                <button className="next-button" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Enviando informações..." : <>Enviar e receber mensagem<span aria-hidden="true">↗</span></>}
+                </button>
               ) : !choiceStep ? (
                 <button className="next-button" type="button" onClick={advance}>Continuar<span aria-hidden="true">↗</span></button>
               ) : null}
