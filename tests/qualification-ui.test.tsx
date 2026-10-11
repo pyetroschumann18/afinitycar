@@ -43,7 +43,7 @@ describe("qualification journey", () => {
     expect(screen.getByRole("alert")).toBeTruthy();
   });
 
-  it("keeps contact authorization independent from the form fields", async () => {
+  it("submits contact information and shows success return notice", async () => {
     const user = userEvent.setup();
     render(<HomeExperience />);
     for (const name of ["Carro", "À vista", "R$20.000 – R$30.000"]) {
@@ -52,8 +52,12 @@ describe("qualification journey", () => {
     await user.type(screen.getByLabelText("Sua cidade"), "Sorocaba");
     await user.click(screen.getByRole("button", { name: "Continuar" }));
     await user.click(screen.getByRole("radio", { name: "Não" }));
-    const authorization = screen.getByRole("checkbox") as HTMLInputElement;
-    expect(authorization.checked).toBe(false);
-    expect(screen.queryByRole("link", { name: "Política de Privacidade" })).toBeNull();
+
+    await user.type(screen.getByLabelText("Seu nome"), "Carlos Silva");
+    await user.type(screen.getByLabelText("Seu WhatsApp"), "(15) 99888-7766");
+    await user.click(screen.getByRole("button", { name: /Enviar e receber mensagem/i }));
+
+    expect(screen.getByRole("heading", { name: /Solicitação enviada com sucesso!/i })).toBeTruthy();
+    expect(screen.getByText(/retornar e mandar mensagem no seu WhatsApp/i)).toBeTruthy();
   });
 });

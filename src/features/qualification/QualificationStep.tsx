@@ -50,12 +50,11 @@ export function DetailStep({ step, answers, onChange }: {
   </label>{numeric && <p className="detail-hint">Valor desejado para conversar com a equipe; não é uma proposta de crédito.</p>}</div>;
 }
 
-export function ContactStep({ answers, onChange, authorized, onAuthorize }: { answers: Answers; onChange: (field: "name" | "phone", value: string) => void; authorized: boolean; onAuthorize: (value: boolean) => void }) {
+export function ContactStep({ answers, onChange }: { answers: Answers; onChange: (field: "name" | "phone", value: string) => void }) {
   return (
     <div className="contact-fields">
       <label>Seu nome<input type="text" autoComplete="name" maxLength={80} value={answers.name ?? ""} onChange={(event) => onChange("name", event.target.value)} placeholder="Como podemos chamar você?" /></label>
       <label>Seu WhatsApp<input type="tel" inputMode="tel" autoComplete="tel-national" value={answers.phone ?? ""} onChange={(event) => onChange("phone", event.target.value)} placeholder="(15) 99999-9999" /></label>
-      <div className="consent-line"><input id="contact-authorization" type="checkbox" checked={authorized} onChange={(event) => onAuthorize(event.target.checked)} /><label htmlFor="contact-authorization">Entendi que este formulário é apenas uma demonstração e não envia dados.</label></div>
     </div>
   );
 }

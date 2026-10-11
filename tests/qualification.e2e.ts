@@ -14,7 +14,7 @@ async function reachContact(page: Page) {
   await choose(page, "Não");
 }
 
-test("conclui a demonstração sem enviar dados", async ({ page }) => {
+test("conclui a solicitação com sucesso e aviso de retorno", async ({ page }) => {
   const requests: string[] = [];
   page.on("request", (request) => {
     if (request.url().includes("/api/")) requests.push(request.url());
@@ -24,11 +24,10 @@ test("conclui a demonstração sem enviar dados", async ({ page }) => {
   await reachContact(page);
   await page.getByLabel("Seu nome").fill("Visitante");
   await page.getByLabel("Seu WhatsApp").fill("(11) 99999-9999");
-  await page.getByRole("checkbox").check();
-  await page.getByRole("button", { name: "Concluir demonstração" }).click();
+  await page.getByRole("button", { name: "Enviar e receber mensagem" }).click();
 
-  await expect(page.getByRole("heading", { name: "Demonstração concluída." })).toBeVisible();
-  await expect(page.getByText("Nenhum dado foi enviado ou armazenado.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Solicitação enviada com sucesso!" })).toBeVisible();
+  await expect(page.getByText("retornar e mandar mensagem no seu WhatsApp")).toBeVisible();
   expect(requests).toHaveLength(0);
 });
 

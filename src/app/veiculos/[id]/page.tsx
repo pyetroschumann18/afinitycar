@@ -38,7 +38,7 @@ export default async function VehiclePage({ params }: Props) {
       <div className="vehicle-detail-layout">
         <VehicleGallery images={vehicle.images} name={name} />
         <div className="vehicle-detail-information">
-          <div className="vehicle-detail-price"><span>Preço ilustrativo</span><strong>{currency.format(vehicle.price)}</strong></div>
+          <div className="vehicle-detail-price"><span>Valor anunciado</span><strong>{currency.format(vehicle.price)}</strong></div>
           <p className="vehicle-detail-description">{vehicle.description}</p>
           <dl className="vehicle-detail-facts">
             <div><dt>Ano</dt><dd>{vehicle.year}</dd></div>
@@ -46,7 +46,7 @@ export default async function VehiclePage({ params }: Props) {
             <div><dt>Câmbio*</dt><dd>{vehicle.transmission}</dd></div>
             <div><dt>Combustível*</dt><dd>{vehicle.fuel}</dd></div>
           </dl>
-          <p className="vehicle-detail-disclaimer">* Preço, câmbio, combustível e disponibilidade são ilustrativos nesta versão. Confirme as informações com a equipe antes de negociar.</p>
+          <p className="vehicle-detail-disclaimer">* Valores, opcionais e disponibilidade sujeitos a confirmação. Entre em contato para conhecer as condições de financiamento e negociação.</p>
           <Link className="vehicle-detail-cta" href={`/?veiculo=${vehicle.id}#qualificacao`}>Tenho interesse neste veículo <span aria-hidden="true">↗</span></Link>
           <p className="vehicle-detail-cta-note">O formulário abrirá com este carro selecionado. Sem compromisso.</p>
         </div>

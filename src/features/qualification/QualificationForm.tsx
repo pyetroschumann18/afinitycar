@@ -26,7 +26,6 @@ function stepError(step: StepKey, answers: Answers): string | null {
 export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: VehicleId | null }) {
   const [step, setStep] = useState<StepKey>("vehicleCategory");
   const [answers, setAnswers] = useState<Answers>(() => selectedVehicleId ? { vehicleCategory: "car", hasSpecificVehicle: "yes", vehicleInterest: selectedVehicleId } : {});
-  const [authorized, setAuthorized] = useState(false);
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [error, setError] = useState("");
   const [submittedVehicleId, setSubmittedVehicleId] = useState<VehicleId | null>(null);
@@ -79,8 +78,10 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
     event.preventDefault();
     if (status === "success") return;
     if (!answers.name?.trim()) { setError("Informe seu nome."); return; }
-    if (!answers.phone?.trim()) { setError("Informe seu WhatsApp."); return; }
-    if (!authorized) { setError("Confirme que entendeu o modo demonstrativo."); return; }
+    if (!answers.phone?.trim() || answers.phone.replace(/\D/g, "").length < 8) {
+      setError("Informe seu WhatsApp com DDD.");
+      return;
+    }
 
     setSubmittedVehicleId(answers.vehicleInterest ?? null);
     setError("");
@@ -100,35 +101,67 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
 
         {status === "success" ? (
           <div className="success-state" role="status">
-            <span className="success-symbol" aria-hidden="true">✓</span>
-            <h1 id="qualification-heading" tabIndex={-1} ref={headingRef}>Demonstração concluída.</h1>
-            <p>Nenhum dado foi enviado ou armazenado.</p>
-            {submittedVehicle && <p className="success-interest">Veículo selecionado na demonstração: {submittedVehicle.brand} {submittedVehicle.model}</p>}
+            <div className="success-badge-wrapper">
+              <span className="success-symbol" aria-hidden="true">✓</span>
+            </div>
+            <h1 id="qualification-heading" tabIndex={-1} ref={headingRef}>Solicitação enviada com sucesso!</h1>
+            <p className="success-announcement">
+              Obrigado, <strong>{answers.name || "amigo(a)"}</strong>! Já recebemos suas informações.
+            </p>
+            <div className="success-return-notice">
+              <div className="notice-icon" aria-hidden="true">💬</div>
+              <div className="notice-content">
+                <strong>Aviso de atendimento:</strong>
+                <p>Nossa equipe vai <strong>retornar e mandar mensagem no seu WhatsApp {answers.phone ? `(${answers.phone})` : ""}</strong> em instantes com as melhores opções para você!</p>
+              </div>
+            </div>
+            {submittedVehicle && (
+              <div className="success-vehicle-box">
+                <span className="success-vehicle-label">Veículo selecionado:</span>
+                <strong>{submittedVehicle.brand} {submittedVehicle.model} ({submittedVehicle.year})</strong>
+              </div>
+            )}
+            <div className="success-actions">
+              <button
+                type="button"
+                className="new-search-button"
+                onClick={() => {
+                  setStatus("idle");
+                  setStep("vehicleCategory");
+                  setAnswers({});
+                  setSubmittedVehicleId(null);
+                }}
+              >
+                Fazer nova consulta
+              </button>
+            </div>
           </div>
         ) : (
           <form onSubmit={submit} noValidate>
             <div className="progress-top"><span>Etapa {stepIndex + 1} de {steps.length}</span><span>{Math.round(((stepIndex + 1) / steps.length) * 100)}%</span></div>
             <div className="progress-track" role="progressbar" aria-valuenow={stepIndex + 1} aria-valuemin={1} aria-valuemax={steps.length} aria-label="Progresso do formulário"><span style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }} /></div>
             {selectedVehicle && <p className="selected-interest">Interesse: {selectedVehicle.brand} {selectedVehicle.model}</p>}
-            <h1 key={`heading-${step}`} id="qualification-heading" className="question-heading" tabIndex={-1} ref={headingRef}>{questions[step]}</h1>
-            <p className="question-helper">{step === "contact" ? "Modo demonstrativo: estas informações não saem do navegador." : choiceStep ? "Escolha a opção que mais combina com você." : "Preencha para continuar."}</p>
-            {step === "contact" ? (
-              <ContactStep key={`fields-${step}`} answers={answers} onChange={updateAnswer} authorized={authorized} onAuthorize={(value) => { setAuthorized(value); setError(""); }} />
-            ) : choiceStep ? (
-              <QualificationStep key={`fields-${step}`} step={choiceStep} value={answers[choiceStep]} onChange={(value) => choose(choiceStep, value)} />
-            ) : (
-              <DetailStep key={`fields-${step}`} step={step as Exclude<StepKey, ChoiceKey | "contact">} answers={answers} onChange={updateAnswer} />
-            )}
+            <div key={`step-content-${step}`} className="step-animated-container">
+              <h1 id="qualification-heading" className="question-heading" tabIndex={-1} ref={headingRef}>{questions[step]}</h1>
+              <p className="question-helper">{step === "contact" ? "Informe seus dados para que nossa equipe retorne com o atendimento ideal." : choiceStep ? "Escolha a opção que mais combina com você." : "Preencha para continuar."}</p>
+              {step === "contact" ? (
+                <ContactStep answers={answers} onChange={updateAnswer} />
+              ) : choiceStep ? (
+                <QualificationStep step={choiceStep} value={answers[choiceStep]} onChange={(value) => choose(choiceStep, value)} />
+              ) : (
+                <DetailStep step={step as Exclude<StepKey, ChoiceKey | "contact">} answers={answers} onChange={updateAnswer} />
+              )}
+            </div>
             {error && <p role="alert" className="form-error">{error}</p>}
             <div className="form-actions">
               {stepIndex > 0 && <button className="back-button" type="button" onClick={() => { setStep(steps[stepIndex - 1]); setError(""); }}>Voltar</button>}
               {step === "contact" ? (
-                <button className="next-button" type="submit">Concluir demonstração<span aria-hidden="true">↗</span></button>
+                <button className="next-button" type="submit">Enviar e receber mensagem<span aria-hidden="true">↗</span></button>
               ) : !choiceStep ? (
                 <button className="next-button" type="button" onClick={advance}>Continuar<span aria-hidden="true">↗</span></button>
               ) : null}
             </div>
-            <p className="form-footnote">Projeto demonstrativo. Nenhuma informação é enviada ou armazenada.</p>
+            <p className="form-footnote">🔒 Seus dados estão seguros. Retornaremos com uma mensagem personalizada no seu WhatsApp.</p>
           </form>
         )}
       </div>

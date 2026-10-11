@@ -13,7 +13,7 @@ export function VehicleGrid({ onSelect }: { onSelect: (id: VehicleId) => void })
         <p>Escolha um veículo para contar à gente do seu interesse, ou siga pelo formulário acima.</p>
       </div>
       <div className="vehicles-grid">{vehicles.map((vehicle) => <VehicleCard key={vehicle.id} vehicle={vehicle} onSelect={onSelect} />)}</div>
-      <p className="catalog-note">Preços, características e disponibilidade são ilustrativos nesta versão de desenvolvimento.</p>
+      <p className="catalog-note">Condições especiais, financiamento facilitado e disponibilidade sujeitos a confirmação com nossos consultores.</p>
     </section>
   );
 }
