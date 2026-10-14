@@ -10,6 +10,14 @@ export const metadata: Metadata = {
   title: "AfinityCar | Sua busca por um carro começa aqui",
   description: "Conte à AfinityCar o que você procura e conheça quatro veículos selecionados. Atendimento humano em Sorocaba, SP.",
   openGraph: { title: "AfinityCar | Sua busca por um carro começa aqui", description: "Uma conversa simples para encontrar um veículo que combine com você.", type: "website", locale: "pt_BR" },
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -14,7 +14,8 @@ button { cursor:pointer; }
 .site-header { border-bottom:1px solid #242A2D; background:#0D1113; }
 .header-inner { min-height:90px; display:flex; align-items:center; gap:36px; }
 .brand { display:inline-flex; align-items:center; gap:12px; min-width:0; text-decoration:none; }
-.brand-monogram { font-family:var(--font-jakarta),Arial,sans-serif; font-size:26px; font-weight:900; letter-spacing:-.06em; line-height:1; color:var(--orange); display:inline-flex; align-items:center; user-select:none; transition:transform .2s cubic-bezier(.2,.8,.2,1); }
+.brand-monogram { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; user-select:none; transition:transform .2s cubic-bezier(.2,.8,.2,1); }
+.brand-logo-img { width:clamp(36px,3.8vw,44px); height:clamp(36px,3.8vw,44px); object-fit:contain; display:block; filter:drop-shadow(0 2px 6px rgba(0,0,0,.4)); }
 .brand:hover .brand-monogram { transform:scale(1.08); }
 .brand:active .brand-monogram { transform:scale(.95); }
 .brand-word { font-family:var(--font-jakarta),Arial,sans-serif; font-size:19px; line-height:1.05; font-weight:800; letter-spacing:-.045em; white-space:nowrap; }
@@ -225,7 +226,8 @@ button { cursor:pointer; }
 @media(max-width:650px){
   .shell,.qualification-section,.vehicles-section{width:min(100% - 24px,1200px)}
   .header-inner{min-height:68px;gap:12px}
-  .brand-monogram{font-size:24px}
+  .brand{gap:10px}
+  .brand-logo-img{width:32px;height:32px}
   .brand-word{font-size:17px}
   .brand-word small{font-size:7.5px}
   .header-nav{display:flex;gap:16px;font-size:12px}
