@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Símbolo AfinityCar</title>
+  <desc id="description">Letra A geométrica em laranja com uma estrada em espaço negativo.</desc>
+  <defs>
+    <linearGradient id="afinity-orange" x1="92" y1="72" x2="420" y2="452" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF783E"/>
+      <stop offset="1" stop-color="#FF6B2C"/>
+    </linearGradient>
+    <mask id="road-cutout">
+      <rect width="512" height="512" fill="white"/>
+      <path d="M256 164 350 438H162Z" fill="black"/>
+    </mask>
+  </defs>
+
+  <path
+    d="M45 449 218 83c7-15 21-23 38-23s31 8 38 23l173 366h-94L256 186 139 449Z"
+    fill="url(#afinity-orange)"
+    mask="url(#road-cutout)"
+  />
+
+  <path d="M151 335h75M286 335h75" fill="none" stroke="url(#afinity-orange)" stroke-width="30" stroke-linecap="round"/>
+
+  <g fill="url(#afinity-orange)" aria-hidden="true">
+    <path d="m252 207 8 0 4 22h-16Z"/>
+    <path d="m247 250 18 0 7 32h-32Z"/>
+    <path d="m237 306 38 0 11 49h-60Z"/>
+    <path d="m217 387 78 0 14 51H203Z"/>
+  </g>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" role="img" aria-labelledby="title description">
+  <title id="title">AfinityCar</title>
+  <desc id="description">Logo AfinityCar com símbolo de estrada e assinatura horizontal.</desc>
+  <defs>
+    <linearGradient id="afinity-orange" x1="32" y1="28" x2="286" y2="288" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF783E"/>
+      <stop offset="1" stop-color="#FF6B2C"/>
+    </linearGradient>
+    <mask id="road-cutout">
+      <rect width="320" height="320" fill="white"/>
+      <path d="M160 102 218 274H102Z" fill="black"/>
+    </mask>
+  </defs>
+
+  <g aria-hidden="true">
+    <path
+      d="M28 282 135 53c5-10 13-15 25-15s20 5 25 15l107 229h-59L160 118 87 282Z"
+      fill="url(#afinity-orange)"
+      mask="url(#road-cutout)"
+    />
+    <path d="M94 211h45M181 211h45" fill="none" stroke="url(#afinity-orange)" stroke-width="19" stroke-linecap="round"/>
+    <g fill="url(#afinity-orange)">
+      <path d="m158 129 5 0 2 14h-9Z"/>
+      <path d="m154 156 12 0 4 20h-20Z"/>
+      <path d="m148 191 24 0 7 30h-38Z"/>
+      <path d="m136 242 48 0 9 32h-66Z"/>
+    </g>
+  </g>
+
+  <text x="350" y="202" fill="#F2F4F4" font-family="Plus Jakarta Sans, Inter, Arial, sans-serif" font-size="116" font-weight="800" letter-spacing="-6">Afinity<tspan fill="#FF6B2C">Car</tspan></text>
+  <text x="358" y="247" fill="#A8AFB4" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="6">INTERMEDIAÇÃO AUTOMOTIVA</text>
+</svg>

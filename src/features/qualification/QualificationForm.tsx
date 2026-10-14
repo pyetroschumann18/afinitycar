@@ -176,7 +176,6 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
                 <button className="next-button" type="button" onClick={advance}>Continuar<span aria-hidden="true">↗</span></button>
               ) : null}
             </div>
-            <p className="form-footnote">🔒 Seus dados estão seguros. Retornaremos com uma mensagem personalizada no seu WhatsApp.</p>
           </form>
         )}
       </div>
