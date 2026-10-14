@@ -19,6 +19,8 @@ export const vehicles: readonly Vehicle[] = [
       "/vehicles/hb20-2.jpeg",
       "/vehicles/hb20-3.jpeg",
       "/vehicles/hb20-4.jpeg",
+      "/vehicles/hb20-5.jpeg",
+      "/vehicles/hb20-6.jpeg",
     ],
     description: "HB20 muito bem apresentado, com visual clean, mecânica simples e uma configuração excelente para quem procura um carro econômico, confortável e prático para o dia a dia. O veículo conta com motor Flex e câmbio manual, trazendo uma combinação interessante entre economia de combustível, manutenção acessível e boa dirigibilidade.",
     features: [
