@@ -32,9 +32,9 @@ describe("qualification journey", () => {
     const user = userEvent.setup();
     render(<HomeExperience />);
 
-    await user.click(screen.getByRole("button", { name: /Volkswagen Virtus Comfortline/i }));
+    await user.click(screen.getByRole("button", { name: /Chevrolet Onix Plus LT/i }));
 
-    expect(screen.getByText(/Interesse: Volkswagen Virtus/i)).toBeTruthy();
+    expect(screen.getByText(/Interesse: Chevrolet Onix Plus/i)).toBeTruthy();
     expect(screen.getByRole("heading", { name: "O que você procura?" })).toBeTruthy();
   });
 

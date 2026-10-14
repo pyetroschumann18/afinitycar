@@ -1,5 +1,5 @@
 export const vehicleIds = [
-  "virtus-2021",
+  "onix-plus-2021",
   "corolla-2014",
   "hb20-2015",
   "civic-g8-2008",

@@ -36,7 +36,7 @@ describe("conditional qualification flow", () => {
   });
 
   it("clears the catalog interest when choosing a motorcycle or no specific vehicle", () => {
-    const interested = { vehicleCategory: "car" as const, hasSpecificVehicle: "yes" as const, vehicleInterest: "virtus-2021" as const };
+    const interested = { vehicleCategory: "car" as const, hasSpecificVehicle: "yes" as const, vehicleInterest: "onix-plus-2021" as const };
     expect(applyChoice(interested, "vehicleCategory", "motorcycle").vehicleInterest).toBeUndefined();
     expect(applyChoice(interested, "hasSpecificVehicle", "no").vehicleInterest).toBeUndefined();
   });
