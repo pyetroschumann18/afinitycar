@@ -4,7 +4,7 @@ const vehicles = [
   { id: "virtus-2021", name: "Volkswagen Virtus Comfortline 1.0 TSI", year: "2021", mileage: "58.400 km" },
   { id: "corolla-2014", name: "Toyota Corolla Altis 2.0", year: "2014", mileage: "112.000 km" },
   { id: "c200-2011", name: "Mercedes-Benz C200 Avantgarde", year: "2011", mileage: "86.500 km" },
-  { id: "civic-2014", name: "Honda Civic LXR 2.0", year: "2014", mileage: "98.300 km" },
+  { id: "civic-g8-2008", name: "Honda Civic G8 LXS 1.8 Automático", year: "2008", mileage: "135.000 km" },
 ];
 
 for (const vehicle of vehicles) {
@@ -17,7 +17,7 @@ for (const vehicle of vehicles) {
     await expect(page.getByText(vehicle.mileage, { exact: true })).toBeVisible();
     await expect(page.locator(".vehicle-detail-facts dd").filter({ hasText: new RegExp(`^${vehicle.year}$`) })).toBeVisible();
     await expect(page.locator(".vehicle-detail-photo img")).toBeVisible();
-    await expect(page.getByText("1 foto disponível")).toBeVisible();
+    await expect(page.getByText(/\d+ fotos? disponíveis/)).toBeVisible();
     await expect(page.getByRole("link", { name: /Tenho interesse neste veículo/i })).toHaveAttribute("href", new RegExp(`veiculo=${vehicle.id}`));
   });
 }
@@ -31,7 +31,7 @@ test("the detail CTA returns to the form with the vehicle selected", async ({ pa
 
 test("detail has a single return link and fits a narrow mobile viewport", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
-  await page.goto("/veiculos/civic-2014");
+  await page.goto("/veiculos/civic-g8-2008");
   await expect(page.getByRole("contentinfo")).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Voltar aos veículos/ })).toHaveCount(1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);

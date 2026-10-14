@@ -39,7 +39,43 @@ export default async function VehiclePage({ params }: Props) {
         <VehicleGallery images={vehicle.images} name={name} />
         <div className="vehicle-detail-information">
           <div className="vehicle-detail-price"><span>Valor anunciado</span><strong>{currency.format(vehicle.price)}</strong></div>
-          <p className="vehicle-detail-description">{vehicle.description}</p>
+          <div className="vehicle-detail-description">
+            <p>{vehicle.description}</p>
+
+            {vehicle.features && vehicle.features.length > 0 && (
+              <div className="vehicle-detail-section">
+                <h2>Principais características</h2>
+                <ul className="vehicle-features-list">
+                  {vehicle.features.map((feature, idx) => (
+                    <li key={idx}>
+                      <span className="feature-check" aria-hidden="true">✓</span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {vehicle.highlights && vehicle.highlights.length > 0 && (
+              <div className="vehicle-detail-section">
+                <h2>Destaques do veículo</h2>
+                <div className="vehicle-highlights-grid">
+                  {vehicle.highlights.map((highlight, idx) => (
+                    <div key={idx} className="vehicle-highlight-card">
+                      <strong>{highlight.title}</strong>
+                      <p>{highlight.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {vehicle.conclusion && (
+              <p className="vehicle-detail-conclusion">
+                <strong>{vehicle.conclusion}</strong>
+              </p>
+            )}
+          </div>
           <dl className="vehicle-detail-facts">
             <div><dt>Ano</dt><dd>{vehicle.year}</dd></div>
             <div><dt>Quilometragem</dt><dd>{number.format(vehicle.mileage)} km</dd></div>
