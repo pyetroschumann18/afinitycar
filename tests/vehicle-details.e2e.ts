@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 const vehicles = [
   { id: "onix-plus-2021", name: "Chevrolet Onix Plus LT Turbo Manual", year: "2021", mileage: "59.000 km" },
-  { id: "corolla-2014", name: "Toyota Corolla Altis 2.0", year: "2014", mileage: "112.000 km" },
+  { id: "corolla-2013", name: "Toyota Corolla XEi 2.0 Automático", year: "2013", mileage: "113.000 km" },
   { id: "hb20-2015", name: "Hyundai HB20 Flex Manual", year: "2015", mileage: "85.970 km" },
   { id: "civic-g8-2008", name: "Honda Civic G8 LXS 1.8 Automático", year: "2008", mileage: "135.000 km" },
 ];
