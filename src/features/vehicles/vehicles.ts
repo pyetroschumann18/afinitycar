@@ -63,8 +63,9 @@ export const vehicles: readonly Vehicle[] = [
     price: 63900,
     fuel: "Flex",
     transmission: "Automático",
-    image: "/vehicles/corolla-1.jpeg",
+    image: "/vehicles/corolla.jpeg",
     images: [
+      "/vehicles/corolla.jpeg",
       "/vehicles/corolla-1.jpeg",
       "/vehicles/corolla-2.jpeg",
       "/vehicles/corolla-3.jpeg",
