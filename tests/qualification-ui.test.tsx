@@ -5,7 +5,14 @@ import userEvent from "@testing-library/user-event";
 import { HomeExperience } from "@/features/home/HomeExperience";
 
 beforeEach(() => {
-  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) }));
+  vi.stubGlobal("fetch", vi.fn().mockImplementation(async (_url, options) => ({
+    ok: true,
+    json: async () => ({
+      success: true,
+      submission_id: JSON.parse(options.body).submission_id,
+      lead_id: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+    }),
+  })));
 });
 
 afterEach(() => {
@@ -62,9 +69,37 @@ describe("qualification journey", () => {
 
     await user.type(screen.getByLabelText("Seu nome"), "Carlos Silva");
     await user.type(screen.getByLabelText("Seu WhatsApp"), "(15) 99888-7766");
-    await user.click(screen.getByRole("button", { name: /Enviar e receber mensagem/i }));
+    await user.click(screen.getByRole("button", { name: /Enviar solicitação/i }));
 
-    expect(screen.getByRole("heading", { name: /Solicitação enviada com sucesso!/i })).toBeTruthy();
-    expect(screen.getByText(/retornar e mandar mensagem no seu WhatsApp/i)).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: /Solicitação enviada com sucesso!/i })).toBeTruthy();
+    expect(screen.getByText(/entrar em contato pelo WhatsApp/i)).toBeTruthy();
+  });
+
+  it("keeps entered fields and submission id after failure, then succeeds on retry", async () => {
+    const user = userEvent.setup();
+    const sent: string[] = [];
+    const outbound = vi.fn().mockImplementation(async (_url, options) => {
+      const body = JSON.parse(options.body);
+      sent.push(body.submission_id);
+      if (sent.length === 1) return { ok: false, json: async () => ({ success: false, error: "Não foi possível confirmar o envio. Tente novamente." }) };
+      return { ok: true, json: async () => ({ success: true, submission_id: body.submission_id, lead_id: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee" }) };
+    });
+    vi.stubGlobal("fetch", outbound);
+    render(<HomeExperience />);
+    for (const name of ["Carro", "À vista", "R$20.000 – R$30.000"]) await user.click(screen.getByRole("radio", { name }));
+    await user.type(screen.getByLabelText("Sua cidade"), "Sorocaba");
+    await user.click(screen.getByRole("button", { name: "Continuar" }));
+    await user.click(screen.getByRole("radio", { name: "Não" }));
+    await user.type(screen.getByLabelText("Seu nome"), "Maria Silva");
+    await user.type(screen.getByLabelText("Seu WhatsApp"), "(15) 99888-7766");
+    await user.click(screen.getByRole("button", { name: /Enviar solicitação/i }));
+    expect(await screen.findByRole("alert")).toHaveProperty("textContent", "Não foi possível confirmar o envio. Tente novamente.");
+    expect(screen.queryByRole("heading", { name: /Solicitação enviada com sucesso!/i })).toBeNull();
+    expect(screen.getByLabelText("Seu nome")).toHaveProperty("value", "Maria Silva");
+    expect(screen.getByLabelText("Seu WhatsApp")).toHaveProperty("value", "(15) 99888-7766");
+    await user.click(screen.getByRole("button", { name: /Enviar solicitação/i }));
+    expect(await screen.findByRole("heading", { name: /Solicitação enviada com sucesso!/i })).toBeTruthy();
+    expect(sent).toHaveLength(2);
+    expect(sent[0]).toBe(sent[1]);
   });
 });

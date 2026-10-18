@@ -14,7 +14,7 @@ for (const vehicle of vehicles) {
     await card.getByRole("link", { name: /Ver mais sobre/ }).click();
     await expect(page).toHaveURL(new RegExp(`/veiculos/${vehicle.id}$`));
     await expect(page.getByRole("heading", { level: 1, name: vehicle.name })).toBeVisible();
-    await expect(page.getByText(vehicle.mileage, { exact: true })).toBeVisible();
+    await expect(page.locator(".vehicle-detail-facts dd").filter({ hasText: vehicle.mileage })).toBeVisible();
     await expect(page.locator(".vehicle-detail-facts dd").filter({ hasText: new RegExp(`^${vehicle.year}$`) })).toBeVisible();
     await expect(page.locator(".vehicle-detail-photo img").first()).toBeVisible();
     await expect(page.getByText(/\d+ fotos? disponíveis/)).toBeVisible();

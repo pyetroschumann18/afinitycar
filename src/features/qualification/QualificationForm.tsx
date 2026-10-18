@@ -8,6 +8,7 @@ import { vehicles } from "@/features/vehicles/vehicles";
 import type { VehicleId } from "@/features/vehicles/vehicle.types";
 
 type SubmitStatus = "idle" | "success";
+type LogicalSubmission = { id: string; createdAt: string };
 
 function stepError(step: StepKey, answers: Answers): string | null {
   if (step === "city" && (answers.city?.trim().length ?? 0) < 2) return "Informe sua cidade.";
@@ -32,6 +33,8 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
   const [submittedVehicleId, setSubmittedVehicleId] = useState<VehicleId | null>(null);
   const [previousSelectedVehicleId, setPreviousSelectedVehicleId] = useState<VehicleId | null>(selectedVehicleId);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const logicalSubmissionRef = useRef<LogicalSubmission | null>(null);
+  const submittingRef = useRef(false);
   const steps = getSteps(answers);
   const stepIndex = steps.indexOf(step);
   const choiceStep = step in choices ? step as ChoiceKey : null;
@@ -77,27 +80,57 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (status === "success" || isSubmitting) return;
+    if (status === "success" || submittingRef.current) return;
     if (!answers.name?.trim()) { setError("Informe seu nome."); return; }
-    if (!answers.phone?.trim() || answers.phone.replace(/\D/g, "").length < 8) {
+    const phoneDigits = answers.phone?.replace(/\D/g, "") ?? "";
+    const nationalPhone = phoneDigits.startsWith("55") && (phoneDigits.length === 12 || phoneDigits.length === 13)
+      ? phoneDigits.slice(2) : phoneDigits;
+    if (!/^[1-9]\d[2-9]\d{7,8}$/.test(nationalPhone)) {
       setError("Informe seu WhatsApp com DDD.");
       return;
     }
 
+    if (!logicalSubmissionRef.current) {
+      logicalSubmissionRef.current = { id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+    }
+    const submission = logicalSubmissionRef.current;
+    submittingRef.current = true;
     setIsSubmitting(true);
+    setError("");
     try {
-      await fetch("/api/leads", {
+      const pageUrl = new URL(window.location.href);
+      const utms = Object.fromEntries(
+        ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]
+          .flatMap((key) => {
+            const value = pageUrl.searchParams.get(key);
+            return value ? [[key, value]] : [];
+          }),
+      );
+      const response = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(answers),
+        body: JSON.stringify({
+          submission_id: submission.id,
+          source_created_at: submission.createdAt,
+          landing_url: pageUrl.toString(),
+          ...utms,
+          answers,
+        }),
       });
-    } catch (err) {
-      console.error("Erro ao registrar lead no Google Sheets:", err);
-    } finally {
-      setIsSubmitting(false);
+      const result = await response.json();
+      if (!response.ok || result?.success !== true || result?.submission_id !== submission.id ||
+          typeof result?.lead_id !== "string") {
+        setError(typeof result?.error === "string" && result.error.length <= 160
+          ? result.error : "Não foi possível confirmar o envio. Tente novamente.");
+        return;
+      }
       setSubmittedVehicleId(answers.vehicleInterest ?? null);
-      setError("");
       setStatus("success");
+    } catch {
+      setError("Não foi possível confirmar o envio. Confira sua conexão e tente novamente.");
+    } finally {
+      submittingRef.current = false;
+      setIsSubmitting(false);
     }
   }
 
@@ -125,7 +158,7 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
               <div className="notice-icon" aria-hidden="true">💬</div>
               <div className="notice-content">
                 <strong>Aviso de atendimento:</strong>
-                <p>Nossa equipe vai <strong>retornar e mandar mensagem no seu WhatsApp {answers.phone ? `(${answers.phone})` : ""}</strong> em instantes com as melhores opções para você!</p>
+                <p>Nossa equipe poderá <strong>entrar em contato pelo WhatsApp {answers.phone ? `(${answers.phone})` : ""}</strong> para conversar sobre as opções disponíveis.</p>
               </div>
             </div>
             {submittedVehicle && (
@@ -143,6 +176,7 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
                   setStep("vehicleCategory");
                   setAnswers({});
                   setSubmittedVehicleId(null);
+                  logicalSubmissionRef.current = null;
                 }}
               >
                 Fazer nova consulta
@@ -170,7 +204,7 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
               {stepIndex > 0 && <button className="back-button" type="button" onClick={() => { setStep(steps[stepIndex - 1]); setError(""); }}>Voltar</button>}
               {step === "contact" ? (
                 <button className="next-button" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Enviando informações..." : <>Enviar e receber mensagem<span aria-hidden="true">↗</span></>}
+                  {isSubmitting ? "Enviando informações..." : <>Enviar solicitação<span aria-hidden="true">↗</span></>}
                 </button>
               ) : !choiceStep ? (
                 <button className="next-button" type="button" onClick={advance}>Continuar<span aria-hidden="true">↗</span></button>

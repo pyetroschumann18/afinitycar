@@ -16,6 +16,13 @@ async function reachContact(page: Page) {
 
 test("conclui a solicitação com sucesso e aviso de retorno", async ({ page }) => {
   const requests: string[] = [];
+  await page.route("**/api/leads", async (route) => {
+    const body = route.request().postDataJSON();
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      success: true, submission_id: body.submission_id,
+      lead_id: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+    }) });
+  });
   page.on("request", (request) => {
     if (request.url().includes("/api/")) requests.push(request.url());
   });
@@ -24,11 +31,11 @@ test("conclui a solicitação com sucesso e aviso de retorno", async ({ page }) 
   await reachContact(page);
   await page.getByLabel("Seu nome").fill("Visitante");
   await page.getByLabel("Seu WhatsApp").fill("(11) 99999-9999");
-  await page.getByRole("button", { name: "Enviar e receber mensagem" }).click();
+  await page.getByRole("button", { name: "Enviar solicitação" }).click();
 
   await expect(page.getByRole("heading", { name: "Solicitação enviada com sucesso!" })).toBeVisible();
-  await expect(page.getByText("retornar e mandar mensagem no seu WhatsApp")).toBeVisible();
-  expect(requests).toHaveLength(0);
+  await expect(page.getByText("entrar em contato pelo WhatsApp")).toBeVisible();
+  expect(requests).toHaveLength(1);
 });
 
 test("campo do veículo aceita texto livre", async ({ page }) => {
