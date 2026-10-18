@@ -17,6 +17,7 @@ type Submission = {
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const utmKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const;
+const intakeRpcUrl = "https://eelpnvdufxlwyotmxkhn.supabase.co/rest/v1/rpc/ingest_form_submission";
 
 function invalid(message: string) {
   return NextResponse.json({ success: false, error: message }, { status: 400 });
@@ -117,15 +118,9 @@ export async function POST(request: Request) {
       utms[key] = value;
     }
   }
-  const webhookUrl = process.env.N8N_LEAD_INTAKE_WEBHOOK_URL;
-  if (!webhookUrl) {
+  const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+  if (!supabaseSecretKey || !supabaseSecretKey.startsWith("sb_secret_")) {
     logFailure("not_configured", submissionId);
-    return NextResponse.json({ success: false, error: "O envio está temporariamente indisponível. Tente novamente mais tarde." }, { status: 503 });
-  }
-  try {
-    if (new URL(webhookUrl).protocol !== "https:") throw new Error("invalid_configuration");
-  } catch {
-    logFailure("invalid_configuration", submissionId);
     return NextResponse.json({ success: false, error: "O envio está temporariamente indisponível. Tente novamente mais tarde." }, { status: 503 });
   }
 
@@ -136,9 +131,15 @@ export async function POST(request: Request) {
     source_created_at: createdAt, landing_url: landingUrl, ...utms, raw_payload: answers,
   };
   try {
-    const response = await fetch(webhookUrl, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload), cache: "no-store", signal: AbortSignal.timeout(10_000),
+    const response = await fetch(intakeRpcUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: supabaseSecretKey },
+      body: JSON.stringify({
+        p_source_system: "formulario",
+        p_submission_id: submissionId,
+        p_payload: payload,
+      }),
+      cache: "no-store", signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) {
       logFailure(`upstream_http_${response.status}`, submissionId);
@@ -146,15 +147,17 @@ export async function POST(request: Request) {
     }
     let confirmation: unknown;
     try { confirmation = await response.json(); } catch { confirmation = null; }
-    if (!confirmation || typeof confirmation !== "object" ||
-        (confirmation as Record<string, unknown>).submission_id !== submissionId ||
-        (confirmation as Record<string, unknown>).status !== "processed" ||
-        typeof (confirmation as Record<string, unknown>).lead_id !== "string" ||
-        !uuidPattern.test((confirmation as Record<string, string>).lead_id)) {
+    const row = Array.isArray(confirmation) && confirmation.length === 1 ? confirmation[0] : null;
+    if (!row || typeof row !== "object" ||
+        row.submission_id !== submissionId ||
+        row.status !== "processed" ||
+        typeof row.inserted !== "boolean" ||
+        typeof row.lead_id !== "string" ||
+        !uuidPattern.test(row.lead_id)) {
       logFailure("invalid_confirmation", submissionId);
       return NextResponse.json({ success: false, error: "Não foi possível confirmar a gravação. Tente novamente." }, { status: 502 });
     }
-    return NextResponse.json({ success: true, submission_id: submissionId, lead_id: (confirmation as Record<string, string>).lead_id });
+    return NextResponse.json({ success: true, submission_id: submissionId, lead_id: row.lead_id });
   } catch (error) {
     const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
     logFailure(timedOut ? "timeout" : "network_failure", submissionId);

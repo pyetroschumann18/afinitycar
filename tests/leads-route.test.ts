@@ -23,7 +23,7 @@ const envelope = {
 };
 
 beforeEach(() => {
-  vi.stubEnv("N8N_LEAD_INTAKE_WEBHOOK_URL", "https://example.n8n.cloud/webhook/afinity-intake");
+  vi.stubEnv("SUPABASE_SECRET_KEY", "sb_secret_test_only");
 });
 
 afterEach(() => {
@@ -33,27 +33,32 @@ afterEach(() => {
 
 describe("POST /api/leads", () => {
   it("sends normalized lead data and confirms a persisted lead", async () => {
-    const outbound = vi.fn().mockResolvedValue(new Response(JSON.stringify({ submission_id: submissionId, lead_id: leadId, status: "processed" }), { status: 200 }));
+    const outbound = vi.fn().mockResolvedValue(new Response(JSON.stringify([{ submission_id: submissionId, lead_id: leadId, inserted: true, status: "processed" }]), { status: 200 }));
     vi.stubGlobal("fetch", outbound);
 
     const response = await POST(request(envelope));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ success: true, submission_id: submissionId, lead_id: leadId });
-    const [, options] = outbound.mock.calls[0];
+    const [url, options] = outbound.mock.calls[0];
+    expect(url).toBe("https://eelpnvdufxlwyotmxkhn.supabase.co/rest/v1/rpc/ingest_form_submission");
+    expect(options.headers).toMatchObject({ apikey: "sb_secret_test_only", "Content-Type": "application/json" });
     expect(JSON.parse(options.body)).toMatchObject({
+      p_source_system: "formulario", p_submission_id: submissionId,
+      p_payload: {
       submission_id: submissionId, name: "Maria Silva", phone: "+5515998887766", city: "Sorocaba",
       category: "Carro", financing: "Financiamento", budget_label: "R$20.000 – R$30.000",
       deposit: null, desired_installment: 850, trade_in: null, desired_vehicle: null,
       source: "formulario", source_created_at: "2026-10-18T12:00:00.000Z",
       landing_url: envelope.landing_url, utm_source: "instagram", raw_payload: answers,
+      },
     });
   });
 
   it.each([
     ["upstream rejection", 500, { error: "database failed" }],
-    ["invalid confirmation", 200, { submission_id: submissionId, status: "processed" }],
-    ["wrong submission", 200, { submission_id: leadId, lead_id: leadId, status: "processed" }],
-    ["accepted but not persisted", 202, { submission_id: submissionId, lead_id: leadId, status: "queued" }],
+    ["invalid confirmation", 200, [{ submission_id: submissionId, status: "processed" }]],
+    ["wrong submission", 200, [{ submission_id: leadId, lead_id: leadId, status: "processed" }]],
+    ["accepted but not persisted", 202, [{ submission_id: submissionId, lead_id: leadId, status: "queued" }]],
   ])("does not report success for %s", async (_name, status, body) => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status })));
     const response = await POST(request(envelope));
@@ -61,7 +66,7 @@ describe("POST /api/leads", () => {
     expect((await response.json()).success).toBe(false);
   });
 
-  it("rejects invalid phone before calling the webhook", async () => {
+  it("rejects invalid phone before calling Supabase", async () => {
     const outbound = vi.fn();
     vi.stubGlobal("fetch", outbound);
     const response = await POST(request({ ...envelope, answers: { ...answers, phone: "12345" } }));
@@ -69,7 +74,7 @@ describe("POST /api/leads", () => {
     expect(outbound).not.toHaveBeenCalled();
   });
 
-  it("reports unavailable webhook without success", async () => {
+  it("reports unavailable Supabase without success", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network unavailable")));
     const response = await POST(request(envelope));
     expect(response.status).toBe(502);
@@ -83,8 +88,18 @@ describe("POST /api/leads", () => {
     expect((await response.json()).success).toBe(false);
   });
 
-  it("returns unavailable when the server webhook is not configured", async () => {
-    vi.stubEnv("N8N_LEAD_INTAKE_WEBHOOK_URL", "");
+  it("returns unavailable when the server key is not configured", async () => {
+    vi.stubEnv("SUPABASE_SECRET_KEY", "");
+    const outbound = vi.fn();
+    vi.stubGlobal("fetch", outbound);
+    const response = await POST(request(envelope));
+    expect(response.status).toBe(503);
+    expect(outbound).not.toHaveBeenCalled();
+  });
+
+  it("rejects a public API key before sending lead data", async () => {
+    vi.stubEnv("SUPABASE_SECRET_KEY", "sb_publishable_not_private");
+    vi.stubEnv("N8N_LEAD_INTAKE_WEBHOOK_URL", "https://example.n8n.cloud/webhook/afinity-intake");
     const outbound = vi.fn();
     vi.stubGlobal("fetch", outbound);
     const response = await POST(request(envelope));
@@ -93,14 +108,14 @@ describe("POST /api/leads", () => {
   });
 
   it("uses exact numeric entry for promissory purchase without inventing budget", async () => {
-    const outbound = vi.fn().mockResolvedValue(new Response(JSON.stringify({ submission_id: submissionId, lead_id: leadId, status: "processed" }), { status: 200 }));
+    const outbound = vi.fn().mockResolvedValue(new Response(JSON.stringify([{ submission_id: submissionId, lead_id: leadId, inserted: true, status: "processed" }]), { status: 200 }));
     vi.stubGlobal("fetch", outbound);
     const response = await POST(request({ ...envelope, answers: {
       ...answers, purchaseMethod: "promissory", downPaymentRange: undefined,
       downPaymentAmount: "5000.50", monthlyPaymentAmount: "900.25",
     } }));
     expect(response.status).toBe(200);
-    const payload = JSON.parse(outbound.mock.calls[0][1].body);
+    const payload = JSON.parse(outbound.mock.calls[0][1].body).p_payload;
     expect(payload.deposit).toBe(5000.5);
     expect(payload.desired_installment).toBe(900.25);
     expect(payload.budget_label).toBe("R$20.000 – R$30.000");
