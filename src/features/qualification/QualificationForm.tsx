@@ -10,6 +10,14 @@ import type { VehicleId } from "@/features/vehicles/vehicle.types";
 type SubmitStatus = "idle" | "success";
 type LogicalSubmission = { id: string; createdAt: string };
 
+declare global {
+  interface Window { fbq?: (...args: unknown[]) => void }
+}
+
+function readCookie(name: string) {
+  return document.cookie.split("; ").find((c) => c.startsWith(`${name}=`))?.slice(name.length + 1);
+}
+
 function stepError(step: StepKey, answers: Answers): string | null {
   if (step === "city" && (answers.city?.trim().length ?? 0) < 2) return "Informe sua cidade.";
   if (step === "tradeVehicle" && (answers.tradeVehicleName?.trim().length ?? 0) < 2) return "Informe qual veículo você tem hoje.";
@@ -114,6 +122,8 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
           source_created_at: submission.createdAt,
           landing_url: pageUrl.toString(),
           ...utms,
+          fbp: readCookie("_fbp"),
+          fbc: readCookie("_fbc"),
           answers,
         }),
       });
@@ -124,6 +134,7 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
           ? result.error : "Não foi possível confirmar o envio. Tente novamente.");
         return;
       }
+      window.fbq?.("track", "Lead", {}, { eventID: submission.id });
       setSubmittedVehicleId(answers.vehicleInterest ?? null);
       setStatus("success");
     } catch {

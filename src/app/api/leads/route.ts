@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sendLeadToMeta } from "@/lib/meta-capi";
 import { vehicles } from "@/features/vehicles/vehicles";
 import { choices } from "@/features/qualification/qualification.types";
 import type { Answers } from "@/features/qualification/qualification.types";
@@ -7,6 +8,8 @@ type Submission = {
   submission_id: string;
   source_created_at: string;
   landing_url?: string;
+  fbp?: string;
+  fbc?: string;
   answers: Answers;
   utm_source?: string;
   utm_medium?: string;
@@ -156,6 +159,17 @@ export async function POST(request: Request) {
         !uuidPattern.test(row.lead_id)) {
       logFailure("invalid_confirmation", submissionId);
       return NextResponse.json({ success: false, error: "Não foi possível confirmar a gravação. Tente novamente." }, { status: 502 });
+    }
+    if (row.inserted) {
+      await sendLeadToMeta({
+        eventId: submissionId,
+        eventSourceUrl: landingUrl ?? undefined,
+        name, phone, city,
+        fbp: text(submission.fbp, 200) ?? undefined,
+        fbc: text(submission.fbc, 200) ?? undefined,
+        clientIp: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim(),
+        userAgent: request.headers.get("user-agent") ?? undefined,
+      });
     }
     return NextResponse.json({ success: true, submission_id: submissionId, lead_id: row.lead_id });
   } catch (error) {
