@@ -5,7 +5,6 @@ export type Answers = {
   purchaseMethod?: string;
   budgetRange?: string;
   downPaymentRange?: string;
-  downPaymentAmount?: string;
   monthlyPaymentAmount?: string;
   tradeVehicleName?: string;
   tradeVehicleYear?: string;
@@ -19,7 +18,7 @@ export type Answers = {
 
 export type StepKey =
   | "vehicleCategory" | "purchaseMethod" | "budgetRange" | "downPaymentRange"
-  | "downPaymentAmount" | "monthlyPaymentAmount" | "tradeVehicle" | "city"
+  | "monthlyPaymentAmount" | "tradeVehicle" | "city"
   | "hasSpecificVehicle" | "specificVehicle" | "contact";
 
 export type ChoiceKey = "vehicleCategory" | "purchaseMethod" | "budgetRange" | "downPaymentRange" | "hasSpecificVehicle";
@@ -31,15 +30,15 @@ export const choices = {
   purchaseMethod: [
     { value: "cash", label: "À vista" },
     { value: "financing", label: "Financiamento" },
-    { value: "promissory", label: "Promissória / Carnê" },
     { value: "trade", label: "Troca de veículo" },
   ],
   budgetRange: [
-    { value: "up_to_10k", label: "Até R$10.000" },
-    { value: "10k_20k", label: "R$10.000 – R$20.000" },
-    { value: "20k_30k", label: "R$20.000 – R$30.000" },
-    { value: "30k_50k", label: "R$30.000 – R$50.000" },
-    { value: "above_50k", label: "Acima de R$50.000" },
+    // Faixas mutuamente exclusivas: cada uma cobre [mínimo, máximo) e só a última inclui R$ 80 mil.
+    { value: "30k_40k", label: "R$ 30 mil – R$ 40 mil" },
+    { value: "40k_50k", label: "R$ 40 mil – R$ 50 mil" },
+    { value: "50k_60k", label: "R$ 50 mil – R$ 60 mil" },
+    { value: "60k_70k", label: "R$ 60 mil – R$ 70 mil" },
+    { value: "70k_80k", label: "R$ 70 mil – R$ 80 mil" },
   ],
   downPaymentRange: [
     { value: "none", label: "Sem entrada" },
@@ -58,7 +57,6 @@ export const questions: Record<StepKey, string> = {
   purchaseMethod: "Como pretende comprar?",
   budgetRange: "Qual o valor que pretende investir no veículo?",
   downPaymentRange: "Você tem valor de entrada?",
-  downPaymentAmount: "Quanto consegue dar de entrada?",
   monthlyPaymentAmount: "Qual valor de parcela cabe no seu orçamento?",
   tradeVehicle: "Sobre o seu veículo atual",
   city: "De qual cidade você é?",
@@ -70,7 +68,6 @@ export const questions: Record<StepKey, string> = {
 export function getSteps(answers: Answers): StepKey[] {
   const steps: StepKey[] = ["vehicleCategory", "purchaseMethod", "budgetRange"];
   if (answers.purchaseMethod === "financing") steps.push("downPaymentRange", "monthlyPaymentAmount");
-  if (answers.purchaseMethod === "promissory") steps.push("downPaymentAmount", "monthlyPaymentAmount");
   if (answers.purchaseMethod === "trade") steps.push("tradeVehicle");
   steps.push("city", "hasSpecificVehicle");
   if (answers.hasSpecificVehicle === "yes") steps.push("specificVehicle");
@@ -82,7 +79,6 @@ export function applyChoice(answers: Answers, key: ChoiceKey, value: string): An
   const next: Answers = { ...answers, [key]: value };
   if (key === "purchaseMethod" && value !== answers.purchaseMethod) {
     delete next.downPaymentRange;
-    delete next.downPaymentAmount;
     delete next.monthlyPaymentAmount;
     delete next.tradeVehicleName;
     delete next.tradeVehicleYear;

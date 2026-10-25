@@ -8,7 +8,7 @@ async function choose(page: Page, label: string) {
 async function reachContact(page: Page) {
   await choose(page, "Carro");
   await choose(page, "À vista");
-  await choose(page, "R$20.000 – R$30.000");
+  await choose(page, "R$ 30 mil – R$ 40 mil");
   await page.getByLabel("Sua cidade").fill("Cidade exemplo");
   await page.getByRole("button", { name: "Continuar" }).click();
   await choose(page, "Não");
@@ -42,7 +42,7 @@ test("campo do veículo aceita texto livre", async ({ page }) => {
   await page.goto("/");
   await choose(page, "Carro");
   await choose(page, "Financiamento");
-  await choose(page, "R$20.000 – R$30.000");
+  await choose(page, "R$ 30 mil – R$ 40 mil");
   await choose(page, "R$3.000 – R$5.000");
   await page.getByLabel("Valor em reais (R$)").fill("850");
   await page.getByRole("button", { name: "Continuar" }).click();

@@ -42,11 +42,11 @@ export function DetailStep({ step, answers, onChange }: {
     </div>;
   }
 
-  const numeric = step === "downPaymentAmount" || step === "monthlyPaymentAmount";
-  const field = step as "city" | "downPaymentAmount" | "monthlyPaymentAmount";
+  const numeric = step === "monthlyPaymentAmount";
+  const field = step as "city" | "monthlyPaymentAmount";
   return <div className="detail-fields"><label>
     {numeric ? "Valor em reais (R$)" : "Sua cidade"}
-    <input type={numeric ? "number" : "text"} inputMode={numeric ? "decimal" : "text"} min={numeric ? (step === "monthlyPaymentAmount" ? 1 : 0) : undefined} max={numeric ? (step === "monthlyPaymentAmount" ? 1000000 : 10000000) : undefined} step={numeric ? "0.01" : undefined} maxLength={numeric ? undefined : 80} value={answers[field] ?? ""} onChange={(event) => onChange(field, event.target.value)} placeholder={step === "city" ? "Ex.: Sorocaba" : step === "downPaymentAmount" ? "Ex.: 5000" : "Ex.: 900"} />
+    <input type={numeric ? "number" : "text"} inputMode={numeric ? "decimal" : "text"} min={numeric ? 1 : undefined} max={numeric ? 1000000 : undefined} step={numeric ? "0.01" : undefined} maxLength={numeric ? undefined : 80} value={answers[field] ?? ""} onChange={(event) => onChange(field, event.target.value)} placeholder={step === "city" ? "Ex.: Sorocaba" : "Ex.: 900"} />
   </label>{numeric && <p className="detail-hint">Valor desejado para conversar com a equipe; não é uma proposta de crédito.</p>}</div>;
 }
 

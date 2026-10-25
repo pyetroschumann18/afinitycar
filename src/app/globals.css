@@ -22,15 +22,13 @@ button { cursor:pointer; }
 .brand-word>span { color:var(--orange); }
 .brand-word small { display:block; margin-top:5px; font:500 8px/1 var(--font-inter),Arial,sans-serif; letter-spacing:.13em; text-transform:uppercase; color:#A8AFB4; }
 .header-nav { display:flex; align-items:center; gap:30px; margin-left:auto; color:#C5CBCF; font-size:13px; }
-.header-nav a { transition:color .18s,transform .15s; }
+.header-nav a { white-space:nowrap; transition:color .18s,transform .15s; }
+@media(max-width:360px){.header-nav{gap:12px;font-size:12px}}
 .header-nav a:hover,.text-link:hover { color:var(--orange); }
 .header-nav a:active { transform:scale(.96); }
 
 .qualification-section,.vehicles-section { width:min(100% - 40px,1200px); margin-inline:auto; }
-.qualification-section { display:grid; grid-template-columns:185px minmax(0,1fr); gap:40px; padding-top:56px; padding-bottom:88px; scroll-margin-top:24px; }
-.form-side-note { align-self:start; display:flex; align-items:center; gap:10px; color:#B9C0C3; font-size:11px; font-weight:600; white-space:nowrap; padding-top:21px; }
-.tiny-line { width:22px; height:1px; background:var(--orange); }
-.side-index { margin-left:auto; color:#647077; font-size:10px; }
+.qualification-section { display:grid; grid-template-columns:minmax(0,1fr); gap:40px; padding-top:56px; padding-bottom:88px; scroll-margin-top:24px; }
 .form-panel { background:var(--surface); border:1px solid #363D40; border-radius:15px; box-shadow:0 24px 70px rgba(0,0,0,.14); overflow:hidden; }
 .form-intro { display:flex; justify-content:space-between; gap:20px; padding:32px 38px; border-bottom:1px solid #303639; background:var(--surface-2); }
 .section-kicker { color:var(--orange); font-size:11px; line-height:1.4; font-weight:700; letter-spacing:.045em; margin:0 0 10px; }
@@ -109,6 +107,8 @@ button { cursor:pointer; }
 .vehicles-section { padding-bottom:30px; scroll-margin-top:24px; }
 .section-heading { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:24px; padding-top:35px; border-top:1px solid var(--line); }
 .section-heading h2 { font-family:var(--font-jakarta),Arial,sans-serif; font-size:clamp(24px,3vw,32px); letter-spacing:-.045em; margin:0; line-height:1.25; }
+.location-name { display:inline-flex; align-items:center; gap:.18em; white-space:nowrap; }
+.location-pin { color:var(--orange); flex-shrink:0; transform:translateY(.04em); }
 .section-heading>p { max-width:280px; margin:0; color:var(--muted); font-size:12px; line-height:1.6; }
 [data-reveal].reveal-ready { opacity:.72;transform:translateY(14px);transition:opacity .55s ease,transform .55s cubic-bezier(.2,.8,.2,1); }
 [data-reveal].reveal-ready.is-visible { opacity:1;transform:translateY(0); }
@@ -221,7 +221,7 @@ button { cursor:pointer; }
 .privacy-page a:not(.text-link) { text-decoration:underline; color:#FFF; }
 .privacy-page .privacy-draft { border-left:2px solid var(--orange); padding-left:16px; color:#E9BAA5; }
 .text-link { color:var(--orange); font-size:12px; font-weight:700; }
-@media(max-width:1050px){.qualification-section{grid-template-columns:1fr;gap:15px;padding-top:35px}.form-side-note{padding-top:0}.side-index{margin-left:0}.vehicles-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.header-nav{gap:18px}}
+@media(max-width:1050px){.qualification-section{grid-template-columns:1fr;gap:15px;padding-top:35px}.vehicles-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.header-nav{gap:18px}}
 @media(max-width:900px){.vehicle-detail-layout{grid-template-columns:1fr}.vehicle-detail-year{display:none}.vehicle-detail-photo{height:min(72vw,560px)}.vehicle-detail-information{max-width:700px}.footer-main{grid-template-columns:1fr 1fr;gap:30px}}
 @media(max-width:650px){
   .shell,.qualification-section,.vehicles-section{width:min(100% - 24px,1200px)}
@@ -232,7 +232,6 @@ button { cursor:pointer; }
   .brand-word small{font-size:7.5px}
   .header-nav{display:flex;gap:16px;font-size:12px}
   .qualification-section{padding-top:20px;padding-bottom:54px}
-  .form-side-note{font-size:10px}
   .form-intro{padding:20px 18px}
   .form-intro-text{font-size:16.5px;line-height:1.4}
   .form-panel form,.success-state{padding:22px 18px 20px}
