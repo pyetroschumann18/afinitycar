@@ -87,11 +87,10 @@ export async function POST(request: Request) {
   if (answers.purchaseMethod === "trade" && !text(answers.tradeVehicleName, 120)) return invalid("Informe o veículo da troca.");
   if (answers.hasSpecificVehicle === "yes" && !answers.vehicleInterest && !text(answers.specificVehicleName, 200)) return invalid("Informe o veículo desejado.");
 
-  const deposit = answers.purchaseMethod === "promissory" ? amount(answers.downPaymentAmount, 10_000_000) : null;
-  const desiredInstallment = answers.purchaseMethod === "financing" || answers.purchaseMethod === "promissory"
-    ? amount(answers.monthlyPaymentAmount, 1_000_000) : null;
-  if (answers.purchaseMethod === "promissory" && deposit === null) return invalid("Informe um valor de entrada válido.");
-  if ((answers.purchaseMethod === "financing" || answers.purchaseMethod === "promissory") && (!desiredInstallment || desiredInstallment <= 0)) return invalid("Informe uma parcela válida.");
+  // A entrada é informada só como faixa (financiamento); o valor exato não é mais perguntado.
+  const deposit = null;
+  const desiredInstallment = answers.purchaseMethod === "financing" ? amount(answers.monthlyPaymentAmount, 1_000_000) : null;
+  if (answers.purchaseMethod === "financing" && (!desiredInstallment || desiredInstallment <= 0)) return invalid("Informe uma parcela válida.");
 
   const selectedVehicle = answers.vehicleInterest ? vehicles.find((vehicle) => vehicle.id === answers.vehicleInterest) : null;
   if (answers.vehicleInterest && !selectedVehicle) return invalid("Veículo inválido.");

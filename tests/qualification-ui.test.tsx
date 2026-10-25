@@ -27,11 +27,11 @@ describe("qualification journey", () => {
 
     await user.click(screen.getByRole("radio", { name: "Carro" }));
     await user.click(screen.getByRole("radio", { name: "Financiamento" }));
-    await user.click(screen.getByRole("radio", { name: "R$20.000 – R$30.000" }));
+    await user.click(screen.getByRole("radio", { name: "R$ 30 mil – R$ 40 mil" }));
     await user.click(screen.getByRole("button", { name: "Voltar" }));
 
-    expect((screen.getByRole("radio", { name: "R$20.000 – R$30.000" }) as HTMLInputElement).checked).toBe(true);
-    await user.click(screen.getByRole("radio", { name: "R$20.000 – R$30.000" }));
+    expect((screen.getByRole("radio", { name: "R$ 30 mil – R$ 40 mil" }) as HTMLInputElement).checked).toBe(true);
+    await user.click(screen.getByRole("radio", { name: "R$ 30 mil – R$ 40 mil" }));
     expect(screen.getByRole("heading", { name: "Você tem valor de entrada?" })).toBeTruthy();
   });
 
@@ -50,7 +50,7 @@ describe("qualification journey", () => {
     render(<HomeExperience />);
     await user.click(screen.getByRole("radio", { name: "Carro" }));
     await user.click(screen.getByRole("radio", { name: "Financiamento" }));
-    await user.click(screen.getByRole("radio", { name: "R$20.000 – R$30.000" }));
+    await user.click(screen.getByRole("radio", { name: "R$ 30 mil – R$ 40 mil" }));
     await user.click(screen.getByRole("radio", { name: "Sem entrada" }));
     await user.click(screen.getByRole("button", { name: "Continuar" }));
     expect(screen.getByRole("heading", { name: "Qual valor de parcela cabe no seu orçamento?" })).toBeTruthy();
@@ -60,7 +60,7 @@ describe("qualification journey", () => {
   it("submits contact information and shows success return notice", async () => {
     const user = userEvent.setup();
     render(<HomeExperience />);
-    for (const name of ["Carro", "À vista", "R$20.000 – R$30.000"]) {
+    for (const name of ["Carro", "À vista", "R$ 30 mil – R$ 40 mil"]) {
       await user.click(screen.getByRole("radio", { name }));
     }
     await user.type(screen.getByLabelText("Sua cidade"), "Sorocaba");
@@ -86,7 +86,7 @@ describe("qualification journey", () => {
     });
     vi.stubGlobal("fetch", outbound);
     render(<HomeExperience />);
-    for (const name of ["Carro", "À vista", "R$20.000 – R$30.000"]) await user.click(screen.getByRole("radio", { name }));
+    for (const name of ["Carro", "À vista", "R$ 30 mil – R$ 40 mil"]) await user.click(screen.getByRole("radio", { name }));
     await user.type(screen.getByLabelText("Sua cidade"), "Sorocaba");
     await user.click(screen.getByRole("button", { name: "Continuar" }));
     await user.click(screen.getByRole("radio", { name: "Não" }));

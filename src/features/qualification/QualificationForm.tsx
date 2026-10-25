@@ -22,12 +22,10 @@ function stepError(step: StepKey, answers: Answers): string | null {
   if (step === "city" && (answers.city?.trim().length ?? 0) < 2) return "Informe sua cidade.";
   if (step === "tradeVehicle" && (answers.tradeVehicleName?.trim().length ?? 0) < 2) return "Informe qual veículo você tem hoje.";
   if (step === "specificVehicle" && !answers.vehicleInterest && (answers.specificVehicleName?.trim().length ?? 0) < 2) return "Selecione ou descreva o veículo desejado.";
-  if (step === "downPaymentAmount" || step === "monthlyPaymentAmount") {
+  if (step === "monthlyPaymentAmount") {
     const text = answers[step];
     const amount = Number(text);
-    const minimum = step === "monthlyPaymentAmount" ? 1 : 0;
-    const maximum = step === "monthlyPaymentAmount" ? 1_000_000 : 10_000_000;
-    if (!text?.trim() || !Number.isFinite(amount) || amount < minimum || amount > maximum) return "Informe um valor válido em reais.";
+    if (!text?.trim() || !Number.isFinite(amount) || amount < 1 || amount > 1_000_000) return "Informe um valor válido em reais.";
   }
   return null;
 }
@@ -147,7 +145,6 @@ export function QualificationForm({ selectedVehicleId }: { selectedVehicleId: Ve
 
   return (
     <section id="qualificacao" className="qualification-section" aria-labelledby="qualification-heading">
-      <div className="form-side-note"><span className="tiny-line" /> Atendimento guiado <span className="side-index">01 / 02</span></div>
       <div className="form-panel">
         <div className="form-intro">
           <div>

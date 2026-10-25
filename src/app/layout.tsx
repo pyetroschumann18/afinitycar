@@ -9,7 +9,7 @@ const jakarta = localFont({ src: "./fonts/plus-jakarta-sans-latin.woff2", variab
 
 export const metadata: Metadata = {
   title: "AfinityCar | Sua busca por um carro começa aqui",
-  description: "Conte à AfinityCar o que você procura e conheça quatro veículos selecionados. Atendimento humano em Sorocaba, SP.",
+  description: "Conte à AfinityCar o que você procura e conheça os veículos selecionados. Atendimento humano em Sorocaba, SP.",
   openGraph: { title: "AfinityCar | Sua busca por um carro começa aqui", description: "Uma conversa simples para encontrar um veículo que combine com você.", type: "website", locale: "pt_BR" },
   icons: {
     icon: [

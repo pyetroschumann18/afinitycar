@@ -4,7 +4,7 @@ const vehicles = [
   { id: "onix-plus-2021", name: "Chevrolet Onix Plus LT Turbo Manual", year: "2021", mileage: "59.000 km" },
   { id: "corolla-2013", name: "Toyota Corolla XEi 2.0 Automático", year: "2013", mileage: "113.000 km" },
   { id: "hb20-2015", name: "Hyundai HB20 Flex Manual", year: "2015", mileage: "85.970 km" },
-  { id: "civic-g8-2008", name: "Honda Civic G8 LXS 1.8 Automático", year: "2008", mileage: "135.000 km" },
+  { id: "strada-endurance-2022", name: "Fiat Strada Endurance CS Plus 1.4", year: "2022", mileage: "80.000 km" },
 ];
 
 for (const vehicle of vehicles) {
@@ -31,7 +31,7 @@ test("the detail CTA returns to the form with the vehicle selected", async ({ pa
 
 test("detail has a single return link and fits a narrow mobile viewport", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
-  await page.goto("/veiculos/civic-g8-2008");
+  await page.goto("/veiculos/strada-endurance-2022");
   await expect(page.getByRole("contentinfo")).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Voltar aos veículos/ })).toHaveCount(1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);

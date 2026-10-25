@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyChoice, getSteps } from "@/features/qualification/qualification.types";
+import { applyChoice, choices, getSteps } from "@/features/qualification/qualification.types";
 
 describe("conditional qualification flow", () => {
   it("skips financing details for a cash buyer", () => {
@@ -15,11 +15,12 @@ describe("conditional qualification flow", () => {
     ]);
   });
 
-  it("keeps promissory entry separate from the monthly installment", () => {
-    expect(getSteps({ purchaseMethod: "promissory", hasSpecificVehicle: "no" })).toEqual([
-      "vehicleCategory", "purchaseMethod", "budgetRange", "downPaymentAmount", "monthlyPaymentAmount",
-      "city", "hasSpecificVehicle", "contact",
+  it("offers only cash, financing and trade, and budgets from R$ 30 mil to R$ 80 mil", () => {
+    expect(choices.purchaseMethod.map((c) => c.label)).toEqual(["À vista", "Financiamento", "Troca de veículo"]);
+    expect(choices.budgetRange.map((c) => c.label)).toEqual([
+      "R$ 30 mil – R$ 40 mil", "R$ 40 mil – R$ 50 mil", "R$ 50 mil – R$ 60 mil", "R$ 60 mil – R$ 70 mil", "R$ 70 mil – R$ 80 mil",
     ]);
+    expect(new Set(choices.budgetRange.map((c) => c.value)).size).toBe(5);
   });
 
   it("asks about the buyer's current vehicle only on the trade path", () => {

@@ -4,7 +4,7 @@ import { POST } from "@/app/api/leads/route";
 const submissionId = "11aa22bb-33cc-44dd-88ee-ff0011223344";
 const leadId = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee";
 const answers = {
-  vehicleCategory: "car", purchaseMethod: "financing", budgetRange: "20k_30k",
+  vehicleCategory: "car", purchaseMethod: "financing", budgetRange: "30k_40k",
   downPaymentRange: "3k_5k", monthlyPaymentAmount: "850", city: "Sorocaba",
   hasSpecificVehicle: "no", name: "Maria Silva", phone: "(15) 99888-7766",
 };
@@ -46,7 +46,7 @@ describe("POST /api/leads", () => {
       p_source_system: "formulario", p_submission_id: submissionId,
       p_payload: {
       submission_id: submissionId, name: "Maria Silva", phone: "+5515998887766", city: "Sorocaba",
-      category: "Carro", financing: "Financiamento", budget_label: "R$20.000 – R$30.000",
+      category: "Carro", financing: "Financiamento", budget_label: "R$ 30 mil – R$ 40 mil",
       deposit: null, desired_installment: 850, trade_in: null, desired_vehicle: null,
       source: "formulario", source_created_at: "2026-10-18T12:00:00.000Z",
       landing_url: envelope.landing_url, utm_source: "instagram", raw_payload: answers,
@@ -107,18 +107,26 @@ describe("POST /api/leads", () => {
     expect(outbound).not.toHaveBeenCalled();
   });
 
-  it("uses exact numeric entry for promissory purchase without inventing budget", async () => {
+  it("rejects the removed promissory method and budgets outside R$ 30–80 mil", async () => {
+    const outbound = vi.fn();
+    vi.stubGlobal("fetch", outbound);
+    const promissory = await POST(request({ ...envelope, answers: { ...answers, purchaseMethod: "promissory", downPaymentRange: undefined } }));
+    expect(promissory.status).toBe(400);
+    for (const budgetRange of ["20k_30k", "above_50k", "80k_90k"]) {
+      expect((await POST(request({ ...envelope, answers: { ...answers, budgetRange } }))).status).toBe(400);
+    }
+    expect(outbound).not.toHaveBeenCalled();
+  });
+
+  it("sends the new budget label without inventing a numeric budget or deposit", async () => {
     const outbound = vi.fn().mockResolvedValue(new Response(JSON.stringify([{ submission_id: submissionId, lead_id: leadId, inserted: true, status: "processed" }]), { status: 200 }));
     vi.stubGlobal("fetch", outbound);
-    const response = await POST(request({ ...envelope, answers: {
-      ...answers, purchaseMethod: "promissory", downPaymentRange: undefined,
-      downPaymentAmount: "5000.50", monthlyPaymentAmount: "900.25",
-    } }));
+    const response = await POST(request({ ...envelope, answers: { ...answers, budgetRange: "70k_80k", monthlyPaymentAmount: "900.25" } }));
     expect(response.status).toBe(200);
     const payload = JSON.parse(outbound.mock.calls[0][1].body).p_payload;
-    expect(payload.deposit).toBe(5000.5);
+    expect(payload.budget_label).toBe("R$ 70 mil – R$ 80 mil");
     expect(payload.desired_installment).toBe(900.25);
-    expect(payload.budget_label).toBe("R$20.000 – R$30.000");
+    expect(payload.deposit).toBeNull();
     expect(payload.budget).toBeUndefined();
   });
 });

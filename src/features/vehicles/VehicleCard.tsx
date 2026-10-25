@@ -9,7 +9,7 @@ export function VehicleCard({ vehicle, onSelect }: { vehicle: Vehicle; onSelect:
   return (
     <article className="vehicle-card" data-reveal>
       <div className="vehicle-photo">
-        <Image src={vehicle.image} alt={`${vehicle.brand} ${vehicle.model}`} fill sizes="(max-width: 1050px) 50vw, 25vw" />
+        <Image src={vehicle.image} alt={`${vehicle.brand} ${vehicle.model}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1050px) 50vw, 25vw" style={vehicle.imagePosition ? { objectPosition: vehicle.imagePosition } : undefined} />
       </div>
       <div className="vehicle-info">
         <div className="vehicle-brand">{vehicle.brand}</div>
