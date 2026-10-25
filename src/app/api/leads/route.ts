@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { sendLeadToMeta } from "@/lib/meta-capi";
+import { BodyTooLargeError, clientKey, createRateLimiter, readBodyLimited } from "@/lib/request-guard";
 import { vehicles } from "@/features/vehicles/vehicles";
 import { choices } from "@/features/qualification/qualification.types";
 import type { Answers } from "@/features/qualification/qualification.types";
@@ -21,6 +22,18 @@ type Submission = {
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const utmKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const;
 const intakeRpcUrl = "https://eelpnvdufxlwyotmxkhn.supabase.co/rest/v1/rpc/ingest_form_submission";
+
+const maxBodyBytes = 12_000;
+// A real visitor submits once and maybe retries a few times after a failure.
+export const perClientLimiter = createRateLimiter(5, 60_000);
+export const globalLimiter = createRateLimiter(120, 60_000, 1);
+
+function tooMany(retryAfterSeconds: number) {
+  return NextResponse.json(
+    { success: false, error: "Muitas tentativas em pouco tempo. Aguarde um minuto e tente novamente." },
+    { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } },
+  );
+}
 
 function invalid(message: string) {
   return NextResponse.json({ success: false, error: message }, { status: 400 });
@@ -57,12 +70,19 @@ export async function POST(request: Request) {
   if (origin && origin !== new URL(request.url).origin) return invalid("Origem inválida.");
   if (!request.headers.get("content-type")?.startsWith("application/json")) return invalid("Envio inválido.");
 
+  const perClient = perClientLimiter.take(clientKey(request));
+  if (!perClient.allowed) { logFailure("rate_limited_client"); return tooMany(perClient.retryAfterSeconds); }
+  const global = globalLimiter.take("all");
+  if (!global.allowed) { logFailure("rate_limited_global"); return tooMany(global.retryAfterSeconds); }
+
   let submission: Submission;
   try {
-    const body = await request.text();
-    if (body.length > 12_000) return invalid("Envio muito grande.");
+    const body = await readBodyLimited(request, maxBodyBytes);
     submission = JSON.parse(body);
-  } catch {
+  } catch (error) {
+    if (error instanceof BodyTooLargeError) {
+      return NextResponse.json({ success: false, error: "Envio muito grande." }, { status: 413 });
+    }
     return invalid("Dados inválidos. Confira o formulário e tente novamente.");
   }
   if (!submission || typeof submission !== "object" || !submission.answers || typeof submission.answers !== "object") {
